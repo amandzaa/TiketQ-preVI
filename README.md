@@ -1,19 +1,49 @@
-# Ticket Management REST API
+# TiketQ - Ticket Management REST API
 
-A simple REST API for managing event tickets built with Flask, SQLAlchemy, and PostgreSQL.
+A modern REST API for managing event tickets built with Flask, SQLAlchemy, and PostgreSQL. Features a modular architecture with comprehensive CRUD operations, data validation, and Docker containerization.
 
-## Features
+## 🚀 Features
 
 - ✅ Complete CRUD operations for tickets
 - ✅ Input validation with detailed error messages
 - ✅ Comprehensive error handling (400, 404, 500)
 - ✅ PostgreSQL database with SQLAlchemy ORM
-- ✅ Docker containerization
+- ✅ Docker containerization with docker-compose
 - ✅ ISO datetime validation
 - ✅ Health check endpoint
 - ✅ Production-ready with Gunicorn
+- ✅ Modular architecture with blueprints
+- ✅ Marshmallow schemas for data validation
 
-## Quick Start
+## 🏗️ Project Structure
+
+```
+TiketQ-preVI/
+├── app/                    # Main application package
+│   ├── __init__.py         # App factory and extensions
+│   ├── config/             # Configuration settings
+│   │   ├── __init__.py
+│   │   └── config.py
+│   ├── models/             # Database models
+│   │   ├── __init__.py
+│   │   └── tiketq.py
+│   ├── routes/             # Route blueprints
+│   │   ├── __init__.py
+│   │   ├── ticketing.py
+│   │   └── health.py
+│   ├── schemas/            # Marshmallow schemas
+│   │   ├── __init__.py
+│   │   └── ticket_schema.py
+│   └── extensions.py       # Flask extensions
+├── migrations/             # Database migrations
+├── tests/                  # Unit tests
+├── docker-compose.yml      # Docker services
+├── Dockerfile             # Container configuration
+├── requirements.txt        # Python dependencies
+└── run.py                 # Application entry point
+```
+
+## 🚀 Quick Start
 
 ### Using Docker (Recommended)
 
@@ -21,7 +51,7 @@ A simple REST API for managing event tickets built with Flask, SQLAlchemy, and P
 
    ```bash
    git clone <repository-url>
-   cd ticket-api
+   cd TiketQ-preVI
    ```
 
 2. **Start the application**
@@ -30,9 +60,9 @@ A simple REST API for managing event tickets built with Flask, SQLAlchemy, and P
    docker-compose up --build
    ```
 
-3. **The API will be available at:**
+3. **Access the API**
    - API: http://localhost:5000
-   - pgAdmin: http://localhost:5050 (admin@ticket.com / admin)
+   - Health Check: http://localhost:5000/api/health
 
 ### Local Development
 
@@ -46,22 +76,22 @@ A simple REST API for managing event tickets built with Flask, SQLAlchemy, and P
 
    ```bash
    export FLASK_ENV=development
-   export DATABASE_URL=sqlite:///tickets.db  # Or PostgreSQL URL
+   export DATABASE_URL=sqlite:///tiketq.db
    ```
 
 3. **Run the application**
    ```bash
-   python app.py
+   python run.py
    ```
 
-## API Endpoints
+## 📋 API Endpoints
 
 ### Base URL: `http://localhost:5000`
 
-### 1. Health Check
+### Health Check
 
 ```http
-GET /health
+GET /api/health
 ```
 
 **Response:**
@@ -69,11 +99,13 @@ GET /health
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-01-29T10:30:00.000Z"
+  "service": "TiketQ API"
 }
 ```
 
-### 2. List All Tickets
+### Ticket Management
+
+#### 1. List All Tickets
 
 ```http
 GET /tickets
@@ -86,45 +118,24 @@ GET /tickets
 **Response:**
 
 ```json
-{
-  "tickets": [
-    {
-      "id": 1,
-      "eventName": "Concert 2025",
-      "location": "Madison Square Garden",
-      "time": "2025-03-15T19:30:00",
-      "isUsed": false,
-      "created_at": "2025-01-29T10:30:00.000Z",
-      "updated_at": "2025-01-29T10:30:00.000Z"
-    }
-  ],
-  "count": 1
-}
+[
+  {
+    "id": 1,
+    "eventName": "Concert 2025",
+    "location": "Madison Square Garden",
+    "time": "2025-03-15T19:30:00",
+    "isUsed": false
+  }
+]
 ```
 
-### 3. Get Specific Ticket
+#### 2. Get Specific Ticket
 
 ```http
 GET /tickets/:id
 ```
 
-**Response:**
-
-```json
-{
-  "ticket": {
-    "id": 1,
-    "eventName": "Concert 2025",
-    "location": "Madison Square Garden",
-    "time": "2025-03-15T19:30:00",
-    "isUsed": false,
-    "created_at": "2025-01-29T10:30:00.000Z",
-    "updated_at": "2025-01-29T10:30:00.000Z"
-  }
-}
-```
-
-### 4. Create New Ticket
+#### 3. Create New Ticket
 
 ```http
 POST /tickets
@@ -142,24 +153,7 @@ Content-Type: application/json
 }
 ```
 
-**Response (201):**
-
-```json
-{
-  "message": "Ticket created successfully",
-  "ticket": {
-    "id": 1,
-    "eventName": "Concert 2025",
-    "location": "Madison Square Garden",
-    "time": "2025-03-15T19:30:00",
-    "isUsed": false,
-    "created_at": "2025-01-29T10:30:00.000Z",
-    "updated_at": "2025-01-29T10:30:00.000Z"
-  }
-}
-```
-
-### 5. Mark Ticket as Used
+#### 4. Update Ticket Usage
 
 ```http
 PATCH /tickets/:id
@@ -174,91 +168,34 @@ Content-Type: application/json
 }
 ```
 
-**Response:**
-
-```json
-{
-  "message": "Ticket updated successfully",
-  "ticket": {
-    "id": 1,
-    "eventName": "Concert 2025",
-    "location": "Madison Square Garden",
-    "time": "2025-03-15T19:30:00",
-    "isUsed": true,
-    "created_at": "2025-01-29T10:30:00.000Z",
-    "updated_at": "2025-01-29T10:32:00.000Z"
-  }
-}
-```
-
-### 6. Delete Ticket
+#### 5. Delete Ticket
 
 ```http
 DELETE /tickets/:id
 ```
 
-**Response:**
+## 🔍 Data Validation
 
-```json
-{
-  "message": "Ticket 1 deleted successfully"
-}
-```
-
-## Data Validation
-
-### Ticket Creation Rules:
+### Ticket Schema Rules:
 
 - `eventName`: Required, 1-200 characters
 - `location`: Required, 1-200 characters
 - `time`: Required, valid ISO datetime format, must be in the future
 - `isUsed`: Optional boolean, defaults to false
 
-### Example Validation Errors:
-
-```json
-{
-  "error": "Validation Error",
-  "message": "Input validation failed",
-  "details": {
-    "eventName": ["Event name is required"],
-    "time": ["Event time must be in the future"]
-  }
-}
-```
-
-## Error Handling
-
-The API returns consistent error responses:
-
-### 400 Bad Request
+### Example Validation Error:
 
 ```json
 {
   "error": "Bad Request",
-  "message": "The request could not be understood by the server"
+  "messages": {
+    "eventName": ["Length must be between 1 and 200."],
+    "time": ["Time must be in the future."]
+  }
 }
 ```
 
-### 404 Not Found
-
-```json
-{
-  "error": "Not Found",
-  "message": "Ticket with id 999 not found"
-}
-```
-
-### 500 Internal Server Error
-
-```json
-{
-  "error": "Internal Server Error",
-  "message": "An unexpected error occurred"
-}
-```
-
-## Testing Examples
+## 🧪 Testing Examples
 
 ### Using curl:
 
@@ -288,70 +225,81 @@ curl -X PATCH http://localhost:5000/tickets/1 \
   -d '{"isUsed": true}'
 ```
 
-## Database Schema
+## 🗄️ Database Schema
 
 ```sql
-CREATE TABLE tickets (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE ticket (
+    id INTEGER PRIMARY KEY,
     eventName VARCHAR(200) NOT NULL,
     location VARCHAR(200) NOT NULL,
-    time TIMESTAMP NOT NULL,
-    isUsed BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    time DATETIME NOT NULL,
+    isUsed BOOLEAN DEFAULT FALSE NOT NULL
 );
 ```
 
-## Environment Variables
+## ⚙️ Environment Variables
 
-- `FLASK_ENV`: Set to 'development' or 'production'
-- `DATABASE_URL`: PostgreSQL connection string
-- `SECRET_KEY`: Flask secret key for security
-- `PORT`: Port to run the application (default: 5000)
+| Variable       | Description                | Default               |
+| -------------- | -------------------------- | --------------------- |
+| `FLASK_ENV`    | Flask environment          | `development`         |
+| `DATABASE_URL` | Database connection string | `sqlite:///tiketq.db` |
+| `SECRET_KEY`   | Flask secret key           | `dev`                 |
 
-## Production Deployment
+## 🐳 Docker Configuration
 
-The application is production-ready with:
+The application includes:
 
-- Gunicorn WSGI server
-- PostgreSQL database
-- Docker containerization
-- Health checks
-- Error logging
-- Security best practices
+- **PostgreSQL 15** database service
+- **Python 3.12** application container
+- **Gunicorn** WSGI server for production
+- **Volume persistence** for database data
 
-## Technologies Used
+## 🛠️ Technologies Used
 
-- **Flask**: Web framework
-- **SQLAlchemy**: ORM for database operations
-- **PostgreSQL**: Primary database
-- **Marshmallow**: Data validation and serialization
-- **Docker**: Containerization
-- **Gunicorn**: WSGI HTTP Server
+- **Flask 2.3.3** - Web framework
+- **SQLAlchemy 3.0.5** - ORM for database operations
+- **PostgreSQL 15** - Primary database
+- **Marshmallow 3.20.1** - Data validation and serialization
+- **Docker & Docker Compose** - Containerization
+- **Gunicorn 21.2.0** - WSGI HTTP Server
+- **Flask-Migrate 4.0.5** - Database migrations
+- **Flask-CORS 4.0.0** - Cross-origin resource sharing
 
-## Project Structure
+## 🔧 Development
 
+### Running Tests
+
+```bash
+python -m pytest tests/
 ```
-TiketQ-preVI/
-│
-├── app/                    # Main application package
-│   ├── __init__.py         # App factory, extensions, etc.
-│   ├── models.py           # SQLAlchemy models (or a models/ folder for many models)
-│   ├── routes.py           # Flask routes (or a routes/ folder for blueprints)
-│   ├── schemas.py          # Marshmallow schemas (optional)
-│   ├── extensions.py       # For db, migrate, etc. initialization
-│   ├── config.py           # Configuration classes
-│   ├── templates/          # Jinja2 HTML templates
-│   └── static/             # Static files (CSS, JS, images)
-│
-├── migrations/             # Alembic migration scripts (created by flask db init)
-│
-├── tests/                  # Unit and integration tests
-│   └── __init__.py
-│
-├── .env                    # Environment variables (not committed)
-├── .gitignore
-├── requirements.txt
-├── README.md
-└── run.py                  # Entry point to run the app (or wsgi.py)
+
+### Database Migrations
+
+```bash
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
 ```
+
+### Code Formatting
+
+```bash
+pip install black
+black app/
+```
+
+## 📝 License
+
+This project is licensed under the MIT License.
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📞 Support
+
+For support, email support@tiketq.com or create an issue in this repository.
